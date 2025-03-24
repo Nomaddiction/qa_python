@@ -52,3 +52,16 @@ def test_add_nonexistent_book_to_favorites_not_added():
     collector = BooksCollector()
     collector.add_book_in_favorites("Несуществующая книга")
     assert "Несуществующая книга" not in collector.get_list_of_favorites_books()
+
+@pytest.mark.parametrize("book_name", ["", "A" * 41])
+def test_add_new_book_invalid_length_not_added(book_name):
+    collector = BooksCollector()
+    collector.add_new_book(book_name)
+    assert book_name not in collector.get_books_genre()
+
+def test_delete_book_from_favorites_not_in_favorites_no_change():
+    collector = BooksCollector()
+    collector.add_new_book("Гарри Поттер")
+    collector.delete_book_from_favorites("Гарри Поттер")
+    assert "Гарри Поттер" not in collector.get_list_of_favorites_books()
+    
