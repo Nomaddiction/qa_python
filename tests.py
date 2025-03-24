@@ -1,24 +1,67 @@
+import pytest
 from main import BooksCollector
 
-# класс TestBooksCollector объединяет набор тестов, которыми мы покрываем наше приложение BooksCollector
-# обязательно указывать префикс Test
-class TestBooksCollector:
 
-    # пример теста:
-    # обязательно указывать префикс test_
-    # дальше идет название метода, который тестируем add_new_book_
-    # затем, что тестируем add_two_books - добавление двух книг
-    def test_add_new_book_add_two_books(self):
-        # создаем экземпляр (объект) класса BooksCollector
-        collector = BooksCollector()
+@pytest.mark.parametrize("book_name", ["Гарри Поттер", "Властелин Колец"])
+def test_add_new_book_valid_input_added(book_name):
+    collector = BooksCollector()
+    collector.add_new_book(book_name)
+    assert book_name in collector.get_books_genre()
 
-        # добавляем две книги
-        collector.add_new_book('Гордость и предубеждение и зомби')
-        collector.add_new_book('Что делать, если ваш кот хочет вас убить')
+@pytest.mark.parametrize("book_name, genre", [("Гарри Поттер", "Фантастика"), ("Оно", "Ужасы")])
+def test_set_book_genre_valid_input_genre_set(book_name, genre):
+    collector = BooksCollector()
+    collector.add_new_book(book_name)
+    collector.set_book_genre(book_name, genre)
+    assert collector.get_book_genre(book_name) == genre
 
-        # проверяем, что добавилось именно две
-        # словарь books_rating, который нам возвращает метод get_books_rating, имеет длину 2
-        assert len(collector.get_books_rating()) == 2
+def test_get_book_genre_no_genre_empty_string():
+    collector = BooksCollector()
+    collector.add_new_book("Гарри Поттер")
+    assert collector.get_book_genre("Гарри Поттер") == ""
 
-    # напиши свои тесты ниже
-    # чтобы тесты были независимыми в каждом из них создавай отдельный экземпляр класса BooksCollector()
+def test_get_books_with_specific_genre_valid_genre_books_listed():
+    collector = BooksCollector()
+    collector.add_new_book("Гарри Поттер")
+    collector.set_book_genre("Гарри Поттер", "Фантастика")
+    assert "Гарри Поттер" in collector.get_books_with_specific_genre("Фантастика")
+
+def test_get_books_for_children_excludes_restricted_books():
+    collector = BooksCollector()
+    collector.add_new_book("Гарри Поттер")
+    collector.set_book_genre("Гарри Поттер", "Фантастика")
+    collector.add_new_book("Оно")
+    collector.set_book_genre("Оно", "Ужасы")
+    assert "Гарри Поттер" in collector.get_books_for_children()
+    assert "Оно" not in collector.get_books_for_children()
+
+def test_add_book_in_favorites_valid_book_added_to_favorites():
+    collector = BooksCollector()
+    collector.add_new_book("Гарри Поттер")
+    collector.add_book_in_favorites("Гарри Поттер")
+    assert "Гарри Поттер" in collector.get_list_of_favorites_books()
+
+def test_delete_book_from_favorites_existing_book_removed():
+    collector = BooksCollector()
+    collector.add_new_book("Гарри Поттер")
+    collector.add_book_in_favorites("Гарри Поттер")
+    collector.delete_book_from_favorites("Гарри Поттер")
+    assert "Гарри Поттер" not in collector.get_list_of_favorites_books()
+
+def test_add_nonexistent_book_to_favorites_not_added():
+    collector = BooksCollector()
+    collector.add_book_in_favorites("Несуществующая книга")
+    assert "Несуществующая книга" not in collector.get_list_of_favorites_books()
+
+@pytest.mark.parametrize("book_name", ["", "A" * 41])
+def test_add_new_book_invalid_length_not_added(book_name):
+    collector = BooksCollector()
+    collector.add_new_book(book_name)
+    assert book_name not in collector.get_books_genre()
+
+def test_delete_book_from_favorites_not_in_favorites_no_change():
+    collector = BooksCollector()
+    collector.add_new_book("Гарри Поттер")
+    collector.delete_book_from_favorites("Гарри Поттер")
+    assert "Гарри Поттер" not in collector.get_list_of_favorites_books()
+    
